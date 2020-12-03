@@ -13,12 +13,12 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @Data
 @Builder
-public class Order {
+public class Order_T {
     @NotNull(message = "Order ID cannot be null")
-    private Integer id;
+    private Integer orderId;
 
     @NotNull
-    private List<Product> productsList;
+    private List<Product> products;
 
     @NotNull
     private Float totalPrice;
@@ -27,5 +27,5 @@ public class Order {
     private OrderStatus status;
 
     @NotNull
-    private Customer customerDetails;
+    private Customer customer;
 }

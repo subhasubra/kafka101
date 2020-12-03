@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kafka101.producer.event.OrderEvent;
 import com.kafka101.producer.event.OrderEventType;
 import com.kafka101.producer.model.Customer;
-import com.kafka101.producer.model.Order;
+import com.kafka101.producer.model.Order_T;
 import com.kafka101.producer.model.OrderStatus;
 import com.kafka101.producer.model.Product;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -40,6 +40,11 @@ public class OrderControllerIntegrationTest {
     private final int ID_GEN_BOUND = Integer.MAX_VALUE;
     private final int PRICE_GEN_BOUND = 10000;
     private final String topic = "order-events-topic";
+    Random randGen = new Random();
+    Customer testCustomer;
+    Product testProduct1;
+    Product testProduct2;
+    Order_T testOrder;
 
     private Consumer<Integer, String> testConsumer;
 
@@ -55,6 +60,36 @@ public class OrderControllerIntegrationTest {
         Map<String, Object> consumerConfig = new HashMap<>(KafkaTestUtils.consumerProps("testGroup", "true", testBroker));
         testConsumer = new DefaultKafkaConsumerFactory<>(consumerConfig, new IntegerDeserializer(), new StringDeserializer()).createConsumer();
         testBroker.consumeFromAnEmbeddedTopic(testConsumer, topic);
+
+        // Create Test Customer
+        testCustomer = Customer.builder()
+                .customerId(randGen.nextInt(ID_GEN_BOUND))
+                .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
+                .email("janedoe@gmail.com")
+                .build();
+
+        // Create Test Products
+        testProduct1 = Product.builder()
+                .productId(randGen.nextInt(ID_GEN_BOUND))
+                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
+                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
+                .quantity(1)
+                .build();
+        testProduct2 = Product.builder()
+                .productId(randGen.nextInt(ID_GEN_BOUND))
+                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
+                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
+                .quantity(1)
+                .build();
+
+        // Create Test Order
+        testOrder = Order_T.builder()
+                .orderId(randGen.nextInt(ID_GEN_BOUND))
+                .status(OrderStatus.NEW)
+                .products(List.of(testProduct1, testProduct2))
+                .totalPrice(testProduct1.getPrice() + testProduct2.getPrice())
+                .customer(testCustomer)
+                .build();
     }
 
     @AfterEach
@@ -65,38 +100,6 @@ public class OrderControllerIntegrationTest {
     @Test
     @Timeout(5)
     void postOrderEvent() throws JsonProcessingException {
-        // Random number generators for ID
-        Random randGen = new Random();
-
-        // Create Test Customer
-        Customer testCustomer = Customer.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
-                .email("janedoe@gmail.com")
-                .build();
-
-        // Create Test Products
-        Product testProduct1 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-        Product testProduct2 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-
-        // Create Test Order
-        Order testOrder = Order.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .status(OrderStatus.NEW)
-                .productsList(List.of(testProduct1, testProduct2))
-                .totalPrice(testProduct1.getPrice() + testProduct2.getPrice())
-                .customerDetails(testCustomer)
-                .build();
 
         // Create Test OrderEvent
         OrderEvent testOrderEvent = OrderEvent.builder()
@@ -129,38 +132,8 @@ public class OrderControllerIntegrationTest {
     @Test
     @Timeout(5)
     void putOrderEvent() throws JsonProcessingException {
-        // Random number generators for ID
-        Random randGen = new Random();
 
-        // Create Test Customer
-        Customer testCustomer = Customer.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
-                .email("janedoe@gmail.com")
-                .build();
-
-        // Create Test Products
-        Product testProduct1 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-        Product testProduct2 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-
-        // Create Test Order
-        Order testOrder = Order.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .status(OrderStatus.NEW)
-                .productsList(List.of(testProduct1, testProduct2))
-                .totalPrice(testProduct1.getPrice() + testProduct2.getPrice())
-                .customerDetails(testCustomer)
-                .build();
+        testOrder.setStatus(OrderStatus.CANCELLED);
 
         // Create Test OrderEvent
         OrderEvent testOrderEvent = OrderEvent.builder()

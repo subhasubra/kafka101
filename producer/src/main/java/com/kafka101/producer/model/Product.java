@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class Product {
     @NotNull
-    private Integer id;
+    private Integer productId;
 
     @NotBlank
     private String name;

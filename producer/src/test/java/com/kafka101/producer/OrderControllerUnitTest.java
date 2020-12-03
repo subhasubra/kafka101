@@ -6,9 +6,10 @@ import com.kafka101.producer.event.OrderEvent;
 import com.kafka101.producer.event.OrderEventProducer;
 import com.kafka101.producer.event.OrderEventType;
 import com.kafka101.producer.model.Customer;
-import com.kafka101.producer.model.Order;
+import com.kafka101.producer.model.Order_T;
 import com.kafka101.producer.model.OrderStatus;
 import com.kafka101.producer.model.Product;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -34,6 +35,12 @@ public class OrderControllerUnitTest {
     private final int ID_GEN_BOUND = Integer.MAX_VALUE;
     private final int PRICE_GEN_BOUND = 10000;
     //private final String topic = "order-events-topic";
+    // Random number generators for ID
+    Random randGen = new Random();
+    Customer testCustomer;
+    Product testProduct1;
+    Product testProduct2;
+    Order_T testOrder;
 
     @Autowired
     MockMvc mockMVC;
@@ -44,41 +51,41 @@ public class OrderControllerUnitTest {
     @MockBean
     OrderEventProducer orderEventProducer;
 
-    @Test
-    void postOrderEvent() throws Exception {
-
-        // Random number generators for ID
-        Random randGen = new Random();
-
+    @BeforeEach
+    void setUp() {
         // Create Test Customer
-        Customer testCustomer = Customer.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
+        testCustomer = Customer.builder()
+                .customerId(randGen.nextInt(ID_GEN_BOUND))
                 .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
                 .email("janedoe@gmail.com")
                 .build();
 
         // Create Test Products
-        Product testProduct1 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
+        testProduct1 = Product.builder()
+                .productId(randGen.nextInt(ID_GEN_BOUND))
                 .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
                 .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
                 .quantity(1)
                 .build();
-        Product testProduct2 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
+        testProduct2 = Product.builder()
+                .productId(randGen.nextInt(ID_GEN_BOUND))
                 .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
                 .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
                 .quantity(1)
                 .build();
 
         // Create Test Order
-        Order testOrder = Order.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
+        testOrder = Order_T.builder()
+                .orderId(randGen.nextInt(ID_GEN_BOUND))
                 .status(OrderStatus.NEW)
-                .productsList(List.of(testProduct1, testProduct2))
+                .products(List.of(testProduct1, testProduct2))
                 .totalPrice(testProduct1.getPrice() + testProduct2.getPrice())
-                .customerDetails(testCustomer)
+                .customer(testCustomer)
                 .build();
+    }
+
+    @Test
+    void postOrderEvent() throws Exception {
 
         // Create Test OrderEvent
         OrderEvent testOrderEvent = OrderEvent.builder()
@@ -100,40 +107,9 @@ public class OrderControllerUnitTest {
 
     @Test
     void postOrderEvent_4xx() throws Exception {
-        // Random number generators for ID
-        Random randGen = new Random();
-
-        // Create Test Customer
-        Customer testCustomer = Customer.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                //.name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
-                .name("")
-                .email("janedoe@gmail.com")
-                .build();
-
-        // Create Test Products
-        Product testProduct1 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-        Product testProduct2 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-
-        // Create Test Order
-        Order testOrder = Order.builder()
-                //.id(randGen.nextInt(ID_GEN_BOUND))
-                .id(null)
-                .status(OrderStatus.NEW)
-                .productsList(List.of(testProduct1, testProduct2))
-                .totalPrice(testProduct1.getPrice() + testProduct2.getPrice())
-                .customerDetails(testCustomer)
-                .build();
+        // Set invalid data for testing validation checks
+        testCustomer.setName("");
+        testOrder.setOrderId(null);
 
         // Create Test OrderEvent
         OrderEvent testOrderEvent = OrderEvent.builder()
@@ -156,39 +132,7 @@ public class OrderControllerUnitTest {
 
     @Test
     void putOrderEvent() throws Exception {
-
-        // Random number generators for ID
-        Random randGen = new Random();
-
-        // Create Test Customer
-        Customer testCustomer = Customer.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
-                .email("janedoe@gmail.com")
-                .build();
-
-        // Create Test Products
-        Product testProduct1 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-        Product testProduct2 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-
-        // Create Test Order
-        Order testOrder = Order.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .status(OrderStatus.NEW)
-                .productsList(List.of(testProduct1, testProduct2))
-                .totalPrice(testProduct1.getPrice() + testProduct2.getPrice())
-                .customerDetails(testCustomer)
-                .build();
+        testOrder.setStatus(OrderStatus.CANCELLED);
 
         // Create Test OrderEvent
         OrderEvent testOrderEvent = OrderEvent.builder()
@@ -209,38 +153,8 @@ public class OrderControllerUnitTest {
 
     @Test
     void putOrderEvent_4xx() throws Exception {
-        // Random number generators for ID
-        Random randGen = new Random();
 
-        // Create Test Customer
-        Customer testCustomer = Customer.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
-                .email("janedoe@gmail.com")
-                .build();
-
-        // Create Test Products
-        Product testProduct1 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-        Product testProduct2 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-
-        // Create Test Order
-        Order testOrder = Order.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .status(OrderStatus.NEW)
-                .productsList(List.of(testProduct1, testProduct2))
-                .totalPrice(testProduct1.getPrice() + testProduct2.getPrice())
-                .customerDetails(testCustomer)
-                .build();
+        testOrder.setStatus(OrderStatus.CANCELLED);
 
         // Create Test OrderEvent
         OrderEvent testOrderEvent = OrderEvent.builder()

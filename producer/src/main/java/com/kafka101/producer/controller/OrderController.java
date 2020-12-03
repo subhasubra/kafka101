@@ -66,9 +66,6 @@ public class OrderController {
 	public ResponseEntity<OrderEvent> cancelOrder(@RequestBody @Valid OrderEvent orderEvent) throws JsonProcessingException {
 		log.info("OrderController: Received Cancel Order : Processing Request {}", orderEvent.toString());
 
-		if (orderEvent.getOrderEventId() == null)
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(orderEvent);
-
 		// publish the event
 		orderEvent.setOrderEventType(OrderEventType.UPDATE);
 		orderEventProducer.sendOrderEvent(orderEvent);

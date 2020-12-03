@@ -42,6 +42,8 @@ public class OrderEventProducer {
 		
 		ProducerRecord<Integer, String> producerRecord = buildProducerRecord(key, value);
 		ListenableFuture<SendResult<Integer, String>> future = kafkaTemplate.send(producerRecord);
+
+		log.info("OrderEventProducer: Ready to send event...");
 		
 		// Uncomment for a simple key/value based publish of messages w.o ProducerRecord
 		//ListenableFuture<SendResult<Integer, String>> future = kafkaTemplate.send(topic, key, value);

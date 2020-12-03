@@ -6,23 +6,30 @@ import com.kafka101.producer.event.OrderEvent;
 import com.kafka101.producer.event.OrderEventProducer;
 import com.kafka101.producer.event.OrderEventType;
 import com.kafka101.producer.model.Customer;
-import com.kafka101.producer.model.Order;
+import com.kafka101.producer.model.Order_T;
 import com.kafka101.producer.model.OrderStatus;
 import com.kafka101.producer.model.Product;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.serialization.IntegerDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
@@ -36,6 +43,11 @@ public class OrderEventProducerUnitTest {
     private final int ID_GEN_BOUND = Integer.MAX_VALUE;
     private final int PRICE_GEN_BOUND = 10000;
     private final String topic = "order-events-topic";
+    Random randGen = new Random();
+    Customer testCustomer;
+    Product testProduct1;
+    Product testProduct2;
+    Order_T testOrder;
 
     @Mock
     KafkaTemplate kafkaTemplate;
@@ -46,43 +58,42 @@ public class OrderEventProducerUnitTest {
     @InjectMocks
     OrderEventProducer orderEventProducer;
 
-    @Test
-    public void sendOrderEvent_TestFailure() {
-        // Random number generators for ID
-        Random randGen = new Random();
+    @BeforeEach
+    void setUp() {
 
         // Create Test Customer
-        Customer testCustomer = Customer.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
+        testCustomer = Customer.builder()
+                .customerId(randGen.nextInt(ID_GEN_BOUND))
                 .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
-                //.name("")
                 .email("janedoe@gmail.com")
                 .build();
 
         // Create Test Products
-        Product testProduct1 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
+        testProduct1 = Product.builder()
+                .productId(randGen.nextInt(ID_GEN_BOUND))
                 .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
                 .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
                 .quantity(1)
                 .build();
-        Product testProduct2 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
+        testProduct2 = Product.builder()
+                .productId(randGen.nextInt(ID_GEN_BOUND))
                 .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
                 .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
                 .quantity(1)
                 .build();
 
         // Create Test Order
-        /*Order testOrder = Order.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                //.id(null)
+        testOrder = Order_T.builder()
+                .orderId(randGen.nextInt(ID_GEN_BOUND))
                 .status(OrderStatus.NEW)
-                .productsList(List.of(testProduct1, testProduct2))
+                .products(List.of(testProduct1, testProduct2))
                 .totalPrice(testProduct1.getPrice() + testProduct2.getPrice())
-                .customerDetails(testCustomer)
-                .build();*/
+                .customer(testCustomer)
+                .build();
+    }
 
+    @Test
+    public void sendOrderEvent_TestFailure() {
         // Create Test OrderEvent
         OrderEvent testOrderEvent = OrderEvent.builder()
                 .orderEventId(randGen.nextInt(ID_GEN_BOUND))
@@ -102,47 +113,12 @@ public class OrderEventProducerUnitTest {
 
     @Test
     public void sendOrderEvent_Success() throws JsonProcessingException, ExecutionException, InterruptedException {
-        // Random number generators for ID
-        Random randGen = new Random();
-
-        // Create Test Customer
-        Customer testCustomer = Customer.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
-                //.name("")
-                .email("janedoe@gmail.com")
-                .build();
-
-        // Create Test Products
-        Product testProduct1 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-        Product testProduct2 = Product.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                .name("TestProduct" + randGen.nextInt(PRICE_GEN_BOUND))
-                .price(Float.valueOf(randGen.nextInt(PRICE_GEN_BOUND)))
-                .quantity(1)
-                .build();
-
-        // Create Test Order
-        Order testOrder = Order.builder()
-                .id(randGen.nextInt(ID_GEN_BOUND))
-                //.id(null)
-                .status(OrderStatus.NEW)
-                .productsList(List.of(testProduct1, testProduct2))
-                .totalPrice(testProduct1.getPrice() + testProduct2.getPrice())
-                .customerDetails(testCustomer)
-                .build();
 
         // Create Test OrderEvent
         OrderEvent testOrderEvent = OrderEvent.builder()
                 .orderEventId(randGen.nextInt(ID_GEN_BOUND))
                 .orderEventType(OrderEventType.NEW)
                 .order(testOrder)
-                //.order(null)
                 .build();
 
         // Mock Kafka Template and make it return a success
