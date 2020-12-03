@@ -11,6 +11,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 @Configuration
 @EnableKafka
 public class OrderEventsConsumerConfig {
+
     @Bean
     ConcurrentKafkaListenerContainerFactory<?,?> kafkaListenerContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
