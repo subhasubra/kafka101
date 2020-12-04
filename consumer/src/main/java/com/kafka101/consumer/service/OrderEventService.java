@@ -9,6 +9,7 @@ import com.kafka101.consumer.repository.Order_T_Repository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -60,6 +61,8 @@ public class OrderEventService {
         Integer orderId = orderEvent.getOrder().getOrderId();
         if (orderId == null)
             throw new IllegalArgumentException("Order ID cannot be NULL");
+        if (orderId != null && orderId == 0)
+            throw new RecoverableDataAccessException("OrderId is 0 indicating a potential system issue. Retry recommended!");
         if(orderRepository.findById(orderId).isPresent() == false )
             throw new IllegalArgumentException("Invalid Order");
 

@@ -187,4 +187,55 @@ public class OrderEventsConsumerIntegrationTest {
             Assertions.assertEquals(tpUpdated, orderEvent.getOrder().getTotalPrice());
         });
     }
+
+    @Test
+    void updateOrderEvent_Failure() throws ExecutionException, InterruptedException, JsonProcessingException {
+        //given
+        // Update the order
+        orderRepository.save(testOrder);
+        Float tpUpdated = 150.75F;
+        testOrder.setTotalPrice(tpUpdated);
+        testOrder.setOrderId(null);
+        // Create Test OrderEvent
+        OrderEvent testOrderEvent = OrderEvent.builder()
+                //.orderEventId(randGen.nextInt(ID_GEN_BOUND))
+                .orderEventId(null)
+                .orderEventType(OrderEventType.UPDATE)
+                .order(testOrder)
+                .build();
+        kafkaTemplate.send(topic, objectMapper.writeValueAsString(testOrderEvent)).get();
+
+        //when
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.await(3, TimeUnit.SECONDS);
+
+        //then
+        verify(orderEventsConsumer, times(1)).onMessage(isA(ConsumerRecord.class));
+        verify(orderEventService, times(1)).processOrderEvent(isA(ConsumerRecord.class));
+    }
+
+    @Test
+    void updateOrderEvent_RecoverableFailure() throws ExecutionException, InterruptedException, JsonProcessingException {
+        //given
+        // Update the order
+        orderRepository.save(testOrder);
+        testOrder.setOrderId(0);
+        // Create Test OrderEvent
+        OrderEvent testOrderEvent = OrderEvent.builder()
+                //.orderEventId(randGen.nextInt(ID_GEN_BOUND))
+                .orderEventId(null)
+                .orderEventType(OrderEventType.UPDATE)
+                .order(testOrder)
+                .build();
+        kafkaTemplate.send(topic, objectMapper.writeValueAsString(testOrderEvent)).get();
+
+        //when
+        CountDownLatch latch = new CountDownLatch(1);
+        latch.await(3, TimeUnit.SECONDS);
+
+        //then
+        verify(orderEventsConsumer, times(3)).onMessage(isA(ConsumerRecord.class));
+        verify(orderEventService, times(3)).processOrderEvent(isA(ConsumerRecord.class));
+    }
+
 }
