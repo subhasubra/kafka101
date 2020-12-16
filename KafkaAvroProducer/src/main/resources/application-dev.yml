@@ -1,0 +1,1 @@
+spring.cloud.schemaRegistryClient.endpoint: http://localhost:8990
