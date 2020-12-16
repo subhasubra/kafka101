@@ -1,0 +1,11 @@
+{
+  "type" : "record",
+  "namespace" : "com.kafka101.model",
+  "name" : "Customer",
+  "version" : "1",
+  "fields" : [
+    {"name" :  "customerId", "type" :  "int", "doc" :  "Unique Identifier"},
+    {"name" :  "name", "type" :  "string", "doc" :  "Full Name of the Customer"},
+    {"name" :  "email", "type" :  "string", "doc" :  "Email of the Customer"}
+  ]
+}
