@@ -12,8 +12,6 @@ import com.kafka101.producer.model.Product;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.IntegerDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,15 +19,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
@@ -66,6 +60,7 @@ public class OrderEventProducerUnitTest {
                 .customerId(randGen.nextInt(ID_GEN_BOUND))
                 .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
                 .email("janedoe@gmail.com")
+                .isPrime(true)
                 .build();
 
         // Create Test Products

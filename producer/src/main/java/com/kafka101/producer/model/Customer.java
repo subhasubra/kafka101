@@ -21,4 +21,7 @@ public class Customer {
 
     @NotBlank
     private String email;
+
+    @NotNull
+    private boolean isPrime;
 }

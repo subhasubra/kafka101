@@ -31,7 +31,8 @@ import java.util.Random;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EmbeddedKafka(topics = {"order-events-topic"}, partitions = 3) // Using Embedded Kafka for tests
 @TestPropertySource(properties = {"spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "spring.kafka.admin.properties.bootstrap.servers=${spring.embedded.kafka.brokers}"})
+        "spring.kafka.admin.properties.bootstrap.servers=${spring.embedded.kafka.brokers}",
+        "spring.kafka.producer.properties.partitioner.class=com.kafka101.producer.partitioner.PrimePartitioner"})
 public class OrderControllerIntegrationTest {
 
     @Autowired
@@ -66,6 +67,7 @@ public class OrderControllerIntegrationTest {
                 .customerId(randGen.nextInt(ID_GEN_BOUND))
                 .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
                 .email("janedoe@gmail.com")
+                .isPrime(true) // Setting Prime Customer to true to test PrimePartition (Custom Partition)
                 .build();
 
         // Create Test Products
@@ -98,7 +100,7 @@ public class OrderControllerIntegrationTest {
     }
 
     @Test
-    @Timeout(5)
+    @Timeout(10)
     void postOrderEvent() throws JsonProcessingException {
 
         // Create Test OrderEvent
@@ -130,10 +132,12 @@ public class OrderControllerIntegrationTest {
     }
 
     @Test
-    @Timeout(5)
+    @Timeout(10)
     void putOrderEvent() throws JsonProcessingException {
 
         testOrder.setStatus(OrderStatus.CANCELLED);
+        // Setting Prime Customer to false to test PrimePartition (Custom Partition)
+        testOrder.getCustomer().setPrime(false);
 
         // Create Test OrderEvent
         OrderEvent testOrderEvent = OrderEvent.builder()
