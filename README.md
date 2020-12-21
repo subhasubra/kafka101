@@ -6,6 +6,7 @@ This Repository contains Kafka Sample Code on the following topics:
 - Unit and Integration Testing Code Snippets
 - Retry and Error Handling
 - Serialization and Deserialization using Apache Avro
+- Custom Partitioning Strategy
 - More to come
 
 <h2>Credits/References</h2>
