@@ -10,6 +10,7 @@ import com.kafka101.consumer.repository.Order_T_Repository;
 import com.kafka101.consumer.repository.ProductRepository;
 import com.kafka101.consumer.service.OrderEventService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.replica.RackAwareReplicaSelector;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,10 +36,14 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+//assignment.consumer.rack=in-east-1
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@EmbeddedKafka(topics = {"order-events-topic"}, partitions = 3) // Using Embedded Kafka for tests
+@EmbeddedKafka(topics = {"order-events-topic"}, partitions = 3, brokerProperties = {"broker.rack=in-east-1"}) // Using Embedded Kafka for tests
 @TestPropertySource(properties = {"spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "spring.kafka.consumer.bootstrap-servers=${spring.embedded.kafka.brokers}"})
+        "spring.kafka.consumer.bootstrap-servers=${spring.embedded.kafka.brokers}",
+        "spring.kafka.consumer.properties.partition.assignment.strategy=com.kafka101.consumer.assignor.RackAwareAssignor",
+        "spring.kafka.consumer.client-rack=in-east-1",
+        "assignment.consumer.rack=in-east-1"})
 public class OrderEventsConsumerIntegrationTest {
 
     private final int ID_GEN_BOUND = Integer.MAX_VALUE;
@@ -92,6 +97,7 @@ public class OrderEventsConsumerIntegrationTest {
                 .customerId(randGen.nextInt(ID_GEN_BOUND))
                 .name("TestCustomer" + randGen.nextInt(PRICE_GEN_BOUND))
                 .email("janedoe@gmail.com")
+                .isPrime(false)
                 .build();
         customerRepository.save(testCustomer);
 
