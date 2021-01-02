@@ -6,8 +6,8 @@ This Repository contains Kafka Sample Code on the following topics:
 - Unit and Integration Testing Code Snippets
 - Retry and Error Handling
 - Serialization and Deserialization using Apache Avro
-- Custom Partitioning Strategy
-- More to come
+- Custom Partition Assignment Strategy (Rack Aware as an example)
+- Kafka Streams that reads data from a topic (source: FileStreamSource Kafka Connector), computes metrics and streams it into another topic using windowing and local state stores (sink (consumed by): Elastic Kafka Connector)
 
 <h2>Credits/References</h2>
 
