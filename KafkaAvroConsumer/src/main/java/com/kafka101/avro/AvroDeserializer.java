@@ -4,23 +4,20 @@ import com.kafka101.model.Customer;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.cache.support.NoOpCacheManager;
-import org.springframework.cloud.schema.registry.avro.AvroSchemaMessageConverter;
 import org.springframework.cloud.schema.registry.avro.AvroSchemaRegistryClientMessageConverter;
 import org.springframework.cloud.schema.registry.avro.AvroSchemaServiceManagerImpl;
 import org.springframework.cloud.schema.registry.avro.DefaultSubjectNamingStrategy;
 import org.springframework.cloud.schema.registry.client.DefaultSchemaRegistryClient;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.core.serializer.support.SerializationFailedException;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.MimeType;
-import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.client.RestTemplate;
-
-import java.net.MalformedURLException;
 import java.util.Map;
+
+/**
+ * Custom Avro Deserializer
+ */
 
 public class AvroDeserializer implements Deserializer {
 
